@@ -87,5 +87,3 @@ while (App.ACTIVO) {
     }
 }
 rl.close();
-
-// console.log(`Thank you for your valuable feedback: ${answer}`);
