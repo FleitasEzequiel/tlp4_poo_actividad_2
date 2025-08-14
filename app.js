@@ -1,5 +1,7 @@
+import { randomInt } from "node:crypto"
+import { setInterval } from "node:timers/promises"
 
-class Evento {
+export class Evento {
     Nombre
     Fecha
     Lugar
@@ -11,127 +13,77 @@ class Evento {
         this.Lugar = LUGAR
         this.Estado = "PROGRAMADO"
     }
-    
-    iniciar(){
-        this.Estado = "JUGANDO"
+    getNombre(){
+        return this.Nombre
     }
-
-    finalizar(){
+    terminarEvento(){
         this.Estado = "FINALIZADO"
     }
-    mostrar_info(){
-        return {Nombre:this.Nombre,Fecha:this.Fecha,Lugar:this.Lugar,Estado:this.Estado}
-    }
 
 }
-class Torneo extends Evento{
-    Equipos
-    Partidos 
-    Posiciones
-    ReglasPuntajes
+export class Torneo extends Evento{
+    #Equipos
+    #Partidos 
+    #Posiciones
+    // #ReglasPuntajes
 
-    constructor(EQUIPOS,PARTIDOS,POSICIONES,REGLASPUNTAJES){
-        this.Equipos = EQUIPOS
-        this.Partidos = PARTIDOS
-        this.Posiciones = POSICIONES
-        this.ReglasPuntajes = REGLASPUNTAJES
+    constructor(Nombre, Fecha, Lugar, EQUIPOS,PARTIDOS,POSICIONES,REGLASPUNTAJES){
+        super(Nombre,Fecha,Lugar)
+        this.#Equipos = EQUIPOS || []
+        this.#Partidos = PARTIDOS
     }
 
-    agregarEquipo(){
-
+    agregarEquipo(EQUIPO){
+        this.Equipos.push(EQUIPO)
     }
-    programaPartido(){
-
-    }
-    mostrarResultado(){
-
-    }
-    actualizarPosiciones(){
-
-    }
-    mostrarPosiciones(){
+    simularTorneo(){
 
     }
 }
-class Partido extends Evento{
+export class Partido {
     LOCAL 
     VISITANTE
-    constructor(NOMBRE,FECHA,LUGAR,ESTADO){
-        super(NOMBRE,FECHA,LUGAR,ESTADO)
+    constructor(LOCAL,VISITANTE,NOMBRE,FECHA,LUGAR,ESTADO){
+        this.LOCAL = LOCAL
+        this.VISITANTE = VISITANTE
+    }
+    simularPartido(){
+        const puntosLocal = randomInt(5)
+        const puntosVisitante = randomInt(5) 
+        if (puntosLocal > puntosVisitante){
+            return `GANÓ EL EQUIPO LOCAL ${this.LOCAL.getNombre()} (${puntosLocal}) ANTE ${this.VISITANTE.getNombre()} (${puntosVisitante})`
+        }
+        if (puntosLocal < puntosVisitante){
+            return `GANÓ EL EQUIPO VISITANTE ${this.VISITANTE.getNombre()} (${puntosVisitante}) ANTE ${this.LOCAL.getNombre()} (${puntosLocal})`
+        }
+        return `EMPATE DE ${this.VISITANTE.getNombre()} Y ${this.LOCAL.getNombre()} DE ${puntosLocal} PUNTOS`
     }
 }  
-class Equipo {
-    NOMBRE
-    JUGADORES
-    ENTRENADOR
-    ESTADISTICAS
-    constructor(NOMBRE,JUGADORES,ENTRENADOR,LOCALIDAD){
-        this.NOMBRE = NOMBRE
-        this.JUGADORES = JUGADORES
+export class Equipo {
+    #NOMBRE
+    #ENTRENADOR
+    // ESTADISTICAS
+    constructor(NOMBRE,ENTRENADOR){
+        this.#NOMBRE = NOMBRE
         this.ENTRENADOR = ENTRENADOR
-        this.LOCALIDAD = LOCALIDAD
-        this.ESTADISTICAS = 0
-        this.PARTIDOS_GANADOS = 0
+        this.ESTADISTICAS = new Estadística
     }
-    agregarJugadores(JUGADOR){
-        this.JUGADORES.push(JUGADOR)
-    }
-    eliminarJugadores(JUGADOR){
-        this.JUGADORES.splice()
-    }
-}
-
-class Jugador{
-    Nombre 
-    Apellido
-    Equipo
-    constructor(NOMBRE,APELLIDO,DNI,LOCALIDAD,FECHANACIMIENTO,EQUIPO){
-        this.Nombre = NOMBRE
-        this.Apellido = APELLIDO
-        this.equipo = EQUIPO
-    }
+    getNombre() {return this.#NOMBRE}
 }
 class Estadística {
     PartidosJugados
     PartidosGanados
     PartidosPerdidos
     Empates
+
+    constructor(){
+        this.PartidosGanados = 0
+        this.PartidosJugados = 0
+        this.PartidosPerdidos = 0
+        this.Empates = 0
+    }
 }
 
+// const POLOFC = new Equipo("POLO FUTBOL CLUB","Eze")
+// console.log(POLOFC)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-..............
-
-const POLO_FC = new Equipo("POLO FC",["Maxi","Maxi","Tobi","Tobi","Lucas","Lucas"],"Mateo Goodaracco","POLO",)
-console.log(POLO_FC)
