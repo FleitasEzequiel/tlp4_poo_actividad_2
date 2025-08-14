@@ -1,89 +1,108 @@
-import { randomInt } from "node:crypto"
-import { setInterval } from "node:timers/promises"
+import * as readline from 'node:readline/promises';
+import { stdin as input, stdout as output } from 'node:process';
+import { Equipo } from './Clases/Equipo.js';
+import { Evento } from './Clases/Evento.js';
+import {Partido } from "./Clases/Partido.js"
+import {Torneo} from "./Clases/Torneo.js"
+// import { Equipo, Evento, Partido, Torneo } from './clases.js';
 
-export class Evento {
-    Nombre
-    Fecha
-    Lugar
-    Estado
+class Aplicacion {
+    EQUIPOS
+    ACTIVO
+    EVENTOS
     
-    constructor(NOMBRE,FECHA,LUGAR) {
-        this.Nombre = NOMBRE
-        this.Fecha = FECHA
-        this.Lugar = LUGAR
-        this.Estado = "PROGRAMADO"
-    }
-    getNombre(){
-        return this.Nombre
-    }
-    terminarEvento(){
-        this.Estado = "FINALIZADO"
-    }
-
-}
-export class Torneo extends Evento{
-    #Equipos
-    #Partidos 
-    #Posiciones
-    // #ReglasPuntajes
-
-    constructor(Nombre, Fecha, Lugar, EQUIPOS,PARTIDOS,POSICIONES,REGLASPUNTAJES){
-        super(Nombre,Fecha,Lugar)
-        this.#Equipos = EQUIPOS || []
-        this.#Partidos = PARTIDOS
-    }
-
-    agregarEquipo(EQUIPO){
-        this.Equipos.push(EQUIPO)
-    }
-    simularTorneo(){
-
-    }
-}
-export class Partido {
-    LOCAL 
-    VISITANTE
-    constructor(LOCAL,VISITANTE,NOMBRE,FECHA,LUGAR,ESTADO){
-        this.LOCAL = LOCAL
-        this.VISITANTE = VISITANTE
-    }
-    simularPartido(){
-        const puntosLocal = randomInt(5)
-        const puntosVisitante = randomInt(5) 
-        if (puntosLocal > puntosVisitante){
-            return `GANÓ EL EQUIPO LOCAL ${this.LOCAL.getNombre()} (${puntosLocal}) ANTE ${this.VISITANTE.getNombre()} (${puntosVisitante})`
-        }
-        if (puntosLocal < puntosVisitante){
-            return `GANÓ EL EQUIPO VISITANTE ${this.VISITANTE.getNombre()} (${puntosVisitante}) ANTE ${this.LOCAL.getNombre()} (${puntosLocal})`
-        }
-        return `EMPATE DE ${this.VISITANTE.getNombre()} Y ${this.LOCAL.getNombre()} DE ${puntosLocal} PUNTOS`
-    }
-}  
-export class Equipo {
-    #NOMBRE
-    #ENTRENADOR
-    // ESTADISTICAS
-    constructor(NOMBRE,ENTRENADOR){
-        this.#NOMBRE = NOMBRE
-        this.ENTRENADOR = ENTRENADOR
-        this.ESTADISTICAS = new Estadística
-    }
-    getNombre() {return this.#NOMBRE}
-}
-class Estadística {
-    PartidosJugados
-    PartidosGanados
-    PartidosPerdidos
-    Empates
-
     constructor(){
-        this.PartidosGanados = 0
-        this.PartidosJugados = 0
-        this.PartidosPerdidos = 0
-        this.Empates = 0
+        this.ACTIVO = true
+        //Estos son datos de ejemplos
+        this.EQUIPOS = [new Equipo("POLO FC","Horacio"), new Equipo("UTN", "Juanito")] 
+        this.EVENTOS = [new Torneo("POLO MUNDIAL","Mañana","En el polo")] 
     }
+    getEquipos() {return this.EQUIPOS}
+    añadirEquipo(EQUIPO) {this.EQUIPOS.push(EQUIPO)}
+    terminarEvento() {this.ACTIVO = false}
+    getEventos() {return this.EVENTOS}
+    añadirEvento(EVENTO){ this.EVENTOS.push((EVENTO))}
 }
 
-// const POLOFC = new Equipo("POLO FUTBOL CLUB","Eze")
-// console.log(POLOFC)
+const App = new Aplicacion()
+const rl = readline.createInterface({ input, output });
+async function crearEquipo(){
+    const nombreEquipo = await rl.question('Nombre del Equipo: ')
+    const nombreDT = await rl.question('Nombre del Director Técnico: ')
+    if (nombreEquipo.trim() == ""){
+        console.log("El campo no puede estar vacío.")
+        return 
+    }
+    if (nombreDT.trim() == ""){
+        console.log("El campo no puede estar vacío.")
+        return 
+    }
+    return new Equipo(nombreEquipo,nombreDT)
+}
+async function crearPartido(EQUIPOLOCAL,EQUIPOVISITANTE){
+    if ((EQUIPOLOCAL === undefined) || (EQUIPOVISITANTE === undefined) ){
+        console.log("Uno de los equipos está indefinido")
+        return
+    }
+    return new Partido(EQUIPOLOCAL,EQUIPOVISITANTE)
+}
 
+
+while (App.ACTIVO) {
+    const opcion = await rl.question('1. Para crear un Equipo \n2. Ver Equipos \n3. Simular Partido \n4. Crear Eventos \n5. Ver Eventos \n')
+
+    switch (parseInt(opcion)) {
+        case (1):
+            const nuevoEquipo = await crearEquipo()
+            App.añadirEquipo(nuevoEquipo)
+            break
+        case (2):
+            console.log("\n- - - - - - - - - - - - - - -");
+            (App.getEquipos()).forEach((equipo,index) => {
+                console.log(`${index}.${equipo.getNombre()}`)
+            });
+            console.log("- - - - - - - - - - - - - - - \n")
+            break;
+        case (3):
+            const EQUIPO1 = await rl.question("Número del Equipo ").then((n)=>(App.getEquipos())[parseInt(n)] )
+            const EQUIPO2 = await rl.question("Número del Equipo ").then((n)=>(App.getEquipos())[parseInt(n)])
+            if ((EQUIPO1 === undefined) || (EQUIPO2 === undefined)) {
+            console.log("No se encontró el equipo.")
+            break}
+            const partido = await crearPartido(EQUIPO1,EQUIPO2)
+            console.log(partido.simularPartido())
+            break;
+        case (4):
+            const nombre = await rl.question("Nombre del Evento: ")
+            const fecha = await rl.question("Fecha: ")
+            const lugar = await rl.question("Lugar: ")
+            const EVENTO = new Evento(nombre,fecha,lugar)
+            App.añadirEvento(EVENTO)
+            break;
+        case (5):
+            if ((App.getEventos()).length < 1){
+                console.log("----------------------- \n  No hay eventos \n-----------------------")
+                break;
+            };
+            console.log("\n- - - - - - - - - - - - - - -");
+            (App.getEventos()).forEach((evento,index) => {
+                console.log(`${index}.${evento.getNombre()}`)
+            });
+            console.log("\n- - - - - - - - - - - - - - -")
+            break;
+        case (6):
+            const evento = await rl.question("Número del Evento").then((n)=>(App.getEventos())[parseInt(n)])
+            if (evento === undefined){
+                console.log("No se encontró el evento")
+                break
+            }
+            console.log(evento)
+            break;
+            
+    
+        default:
+            console.log("Elija una opción de las anteriores enumeradas")
+            break;
+    }
+}
+rl.close();

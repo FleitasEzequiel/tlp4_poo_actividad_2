@@ -13,5 +13,5 @@
 2. **Visualización de Equipos**: Permite ver los equipos creados anteriormente.
 3. **Simulación de partidos**: Permite disputar un partido entre 2 equipos previamente creados, indicando el resultado del partido.
 
-## Diagrama de Clases Original
- <img src="diagrama.jpeg">
+## Diagrama de Clases
+ <img src="diagrama2.jpeg">
